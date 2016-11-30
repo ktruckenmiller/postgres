@@ -1,7 +1,10 @@
 #!/bin/sh
-if [ -z "$1"]; then
-  echo "Gotta put in those params ./build.sh 0.0.1"
-else
-  docker build -t ktruckenmiller/postgres:$1 .
-  docker push ktruckenmiller/postgres:$1
-fi
+
+CURRENT_VERSION=$(git describe --abbrev=0 --tags)
+
+VERSION=$(echo $CURRENT_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+
+docker build -t ktruckenmiller/postgres:$VERSION .
+docker push ktruckenmiller/postgres:$VERSION
+git tag $VERSION
+git push origin --tags
