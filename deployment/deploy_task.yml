@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    stackname: postgres-backup
+  tasks:
+    - name: stack for indietools
+      cloudformation:
+        stack_name: "{{stackname}}"
+        state: present
+        region: "{{region}}"
+        template: postgres.yml
+        template_parameters:
+          Tag: "{{tag | default('')}}"

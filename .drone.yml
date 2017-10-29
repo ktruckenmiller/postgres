@@ -1,0 +1,31 @@
+pipeline:
+  build_docker:
+    image: plugins/ecr
+    repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/postgres
+    region: us-west-2
+    tags:
+      - latest
+      - ${DRONE_TAG}
+    # when:
+    #   event: tag
+
+  deploy_task:
+    image: ktruckenmiller/ansible:dind
+    environment:
+      - AWS_DEFAULT_REGION=us-west-2
+    commands:
+      - ansible-playbook -i ansible_connection=localhost deployment/deploy_task.yml -e tag=latest -e region=us-west-2 -vvv
+    # when:
+    #   event: push
+    #   branch: master
+
+
+  # backup:
+  #   image: ktruckenmiller/ansible:dind
+  #   environment:
+  #     - AWS_DEFAULT_REGION=us-west-2
+  #   commands:
+  #     - ansible-playbook -i ansible_connection=localhost deploy.yml -e tag=0.0.8 -e environ=staging -vvv
+  #   when:
+  #     event: deployment
+  #     branch: master

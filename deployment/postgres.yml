@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An example service
+Parameters:
+  Environment:
+    Type: String
+  SsmPath:
+    Type: String
+  Tag:
+    Type: String
+
+Resources:
+  Logs:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub ${AWS::StackName}
+      RetentionInDays: 7
+  Task:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      TaskRoleArn: !Ref Role
+      ContainerDefinitions:
+        - Name: !Sub ${AWS::StackName}
+          Cpu: 0
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:${Tag}
+          MemoryReservation: 300
+          Environment:
+            - Name: SSM_PATH
+              Value: !Sub ${SsmPath}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: !Sub ${ServiceName}
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "sts:AssumeRole"
+      Path: '/'
+      Policies:
+        - PolicyName: "ssm_and_s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - 's3:Get*'
+                  - 's3:Put*'
+                Resource:
+                  - 'arn:aws:s3:::kloudcover*'
+              - Effect: "Allow"
+                Action:
+                  - 'ssm:Get*'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/indietools/*"
