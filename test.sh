@@ -7,4 +7,4 @@ docker run --rm -it \
   -e S3_PREFIX=indietools/staging \
   -e IAM_ROLE=postgres-backup \
   ktruckenmiller/postgres \
-  sh
+  backup.sh

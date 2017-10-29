@@ -12,5 +12,5 @@ chmod 600 ~/.pgpass
 echo "Backing up postgres database $DB_NAME"
 FILE_NAME=$(date +%s).bk
 pg_dump --username=$DB_USER --dbname=$DB_NAME --host $DB_HOST > $FILE_NAME
-
+echo "Uploading to bucket: $S3_BUCKET with a prefix of $S3_PREFIX/$FILE_NAME"
 s3 put -b $S3_BUCKET -k $S3_PREFIX/$FILE_NAME -p $FILE_NAME --endpoint s3.dualstack.us-west-2.amazonaws.com
