@@ -54,7 +54,7 @@ Resources:
                   - 's3:Get*'
                   - 's3:Put*'
                 Resource:
-                  - 'arn:aws:s3:::kloudcover*'
+                  - 'arn:aws:s3:::kloudcover/*'
               - Effect: "Allow"
                 Action:
                   - 'ssm:Get*'
