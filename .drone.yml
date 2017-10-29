@@ -5,19 +5,18 @@ pipeline:
     region: us-west-2
     tags:
       - latest
-      # - ${DRONE_TAG}
-    # when:
-    #   event: tag
+      - ${DRONE_TAG}
+    when:
+      event: tag
 
   deploy_task:
     image: ktruckenmiller/ansible:dind
     environment:
       - AWS_DEFAULT_REGION=us-west-2
     commands:
-      - ansible-playbook -i ansible_connection=localhost deployment/deploy_task.yml -e tag=latest -e region=us-west-2 -vvv
-    # when:
-    #   event: push
-    #   branch: master
+      - ansible-playbook -i ansible_connection=localhost deployment/deploy_task.yml -e tag=${DRONE_TAG} -e region=us-west-2 -vvv
+    when:
+      event: tag
 
 
   # backup:

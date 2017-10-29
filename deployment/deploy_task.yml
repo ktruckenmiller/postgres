@@ -11,4 +11,4 @@
         region: "{{region}}"
         template: postgres.yml
         template_parameters:
-          Tag: "{{tag | default('')}}"
+          Tag: "{{tag | default('latest')}}"
