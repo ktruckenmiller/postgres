@@ -5,7 +5,7 @@ pipeline:
     region: us-west-2
     tags:
       - latest
-      - ${DRONE_TAG}
+      # - ${DRONE_TAG}
     # when:
     #   event: tag
 
