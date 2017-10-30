@@ -10,3 +10,5 @@ RUN chmod +x /usr/bin/ssm_get_parameter
 RUN chmod +x /usr/bin/s3
 RUN chmod +x /usr/bin/backup.sh
 RUN chmod +x /usr/bin/restore.sh
+ENTRYPOINT [""]
+CMD [""]

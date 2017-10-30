@@ -1,1 +1,23 @@
 ---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    task_family: postgres-utils
+    overrides:
+      containerOverrides:
+        - name: "postgres-backup"
+          command:
+            - restore.sh
+          environment:
+            - name: SSM_PATH
+              value: /indietools/production
+            - name: S3_BUCKET
+              value: kloudcover
+            - name: S3_PREFIX
+              value: indietools/staging
+            - name: FILE_NAME
+              value: "{{filename}}"
+  tasks:
+
+    - name: Start a task
+      command: aws ecs run-task --cluster webapp2 --task-definition {{task_family}} --overrides '{{overrides | to_json}}' --count 1
