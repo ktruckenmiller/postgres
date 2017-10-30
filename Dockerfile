@@ -3,7 +3,7 @@ RUN apk update && apk add ca-certificates
 ENV AWS_REGION=us-west-2
 ENV AWS_DEFAULT_REGION=us-west-2
 COPY vendor/ssm_get_parameter /usr/bin/ssm_get_parameter
-COPY vendor/gof3r /usr/bin/s3
+COPY vendor/s3 /usr/bin/s3
 COPY backup.sh /usr/bin/backup.sh
 COPY restore.sh /usr/bin/restore.sh
 RUN chmod +x /usr/bin/ssm_get_parameter
