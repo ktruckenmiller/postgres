@@ -1,0 +1,18 @@
+version: "2"
+
+volumes:
+  s3data:
+    driver: local
+
+services:
+  s3vol:
+    image: elementar/s3-volume
+    command: /data s3://kloudcover/indietools/staging/postgres-sync
+    environment:
+      - IAM_ROLE=arn:aws:iam::601394826940:role/postgres-backup
+    volumes:
+      - s3data:/data
+  db:
+    image: postgres
+    volumes:
+      - s3data:/var/lib/postgresql/data

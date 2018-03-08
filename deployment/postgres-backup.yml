@@ -3,6 +3,9 @@ Description: An example service
 Parameters:
   Tag:
     Type: String
+  ClusterName:
+    Type: String
+    Default: kloudcover
 
 Resources:
   Logs:
@@ -10,46 +13,45 @@ Resources:
     Properties:
       LogGroupName: !Sub ${AWS::StackName}
       RetentionInDays: 7
+
+  BackupScheduledTask:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Backup Postgres db
+      State: ENABLED
+      ScheduleExpression: rate(14 days)
+      Targets:
+        - Id: backup-postgres
+          RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsEventsRole
+          EcsParameters:
+            TaskDefinitionArn: !Ref Task
+            TaskCount: 1
+          Arn: !Sub arn:aws:ecs:us-west-2:${AWS::AccountId}:cluster/${ClusterName}
+
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
       TaskRoleArn: !Ref Role
-      Family: postgres
+      Family: postgres-utils
       ContainerDefinitions:
         - Name: !Sub ${AWS::StackName}
-          Cpu: 100
+          Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:${Tag}
           MemoryReservation: 300
+          Command: backup.sh
+          Environment:
+            - Name: SSM_PATH
+              Value: /indetools/staging
+            - Name: S3_BUCKET
+              Value: kloudcover
+            - Name: S3_PREFIX
+              Value: indietools/staging
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Sub ${AWS::StackName}
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: postgres
-          MountPoints:
-            - SourceVolume: data
-              ContainerPath: /var/lib/postgresql/data
-        - Name: !Sub ${AWS::StackName}-s3-sync
-          Cpu: 40
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/s3-sync:latest
-          MemoryReservation: 200
-          Essential: true
-          MountPoints:
-            - SourceVolume: data
-              ContainerPath: /var/lib/postgresql/data
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Sub ${AWS::StackName}
-              awslogs-region: !Sub ${AWS::Region}
-              awslogs-stream-prefix: s3-sync
-      Volumes:
-        - Name: data
-          Host:
-            SourcePath: /var/lib/postgresql/data
-
-
-
   Role:
     Type: "AWS::IAM::Role"
     Properties:
@@ -77,7 +79,8 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - 'arn:aws:s3:::kloudcover/indietools/staging/*'
+                  - 'arn:aws:s3:::kloudcover/'
+                  - 'arn:aws:s3:::kloudcover/*'
               - Effect: "Allow"
                 Action:
                   - 'ssm:Get*'

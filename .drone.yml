@@ -10,7 +10,7 @@ pipeline:
       event: tag
   build_s3_sync:
     image: plugins/ecr
-    repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/elementar/s3-volume
+    repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/s3-sync
     dockerfile: Dockerfile.s3-sync
     region: us-west-2
     tags:
