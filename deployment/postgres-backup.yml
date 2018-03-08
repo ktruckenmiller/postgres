@@ -38,7 +38,8 @@ Resources:
           Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:${Tag}
           MemoryReservation: 300
-          Command: backup.sh
+          Command:
+            - backup.sh
           Environment:
             - Name: SSM_PATH
               Value: /indetools/staging
