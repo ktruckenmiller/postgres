@@ -14,10 +14,10 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       TaskRoleArn: !Ref Role
-      Family: postgres-utils
+      Family: postgres
       ContainerDefinitions:
         - Name: !Sub ${AWS::StackName}
-          Cpu: 0
+          Cpu: 100
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:${Tag}
           MemoryReservation: 300
           LogConfiguration:
@@ -26,6 +26,30 @@ Resources:
               awslogs-group: !Sub ${AWS::StackName}
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: postgres
+          MountPoints:
+            - SourceVolume: data
+              ContainerPath: /var/lib/postgresql/data
+        - Name: !Sub ${AWS::StackName}-s3-sync
+          Cpu: 40
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/s3-sync:latest
+          MemoryReservation: 200
+          Essential: true
+          MountPoints:
+            - SourceVolume: data
+              ContainerPath: /var/lib/postgresql/data
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: s3-sync
+      Volumes:
+        - Name: data
+          Host:
+            SourcePath: /var/lib/postgresql/data
+
+
+
   Role:
     Type: "AWS::IAM::Role"
     Properties:
@@ -53,7 +77,7 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - 'arn:aws:s3:::kloudcover/*'
+                  - 'arn:aws:s3:::kloudcover/indietools/staging/*'
               - Effect: "Allow"
                 Action:
                   - 'ssm:Get*'
