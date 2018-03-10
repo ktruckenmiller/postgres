@@ -15,8 +15,9 @@ pipeline:
       - AWS_DEFAULT_REGION=us-west-2
     commands:
       - ansible-playbook -i ansible_connection=localhost deployment/deploy_postgres.yml -e tag=${DRONE_TAG} -e region=us-west-2 -vvv
-    when:
-      event: tag
+      when:
+        event: [push]
+        branch: [master]
 
   # build_s3_sync:
   #   image: plugins/ecr
