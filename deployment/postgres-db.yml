@@ -107,7 +107,8 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - 'arn:aws:s3:::kloudcover/indietools/staging/*'
+                  - arn:aws:s3:::kloudcover/
+                  - arn:aws:s3:::kloudcover/*
               - Effect: "Allow"
                 Action:
                   - 'ssm:Get*'
