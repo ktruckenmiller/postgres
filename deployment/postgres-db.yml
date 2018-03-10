@@ -44,6 +44,9 @@ Resources:
           Cpu: 100
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
           MemoryReservation: 300
+          Environment:
+            - Name: SSM_PATH
+              Value: /indietools/staging
           PortMappings:
             - ContainerPort: 5432
               HostPort: 5432
@@ -107,8 +110,8 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - arn:aws:s3:::kloudcover/
-                  - arn:aws:s3:::kloudcover/*
+                - 'arn:aws:s3:::kloudcover/'
+                - 'arn:aws:s3:::kloudcover/*'
               - Effect: "Allow"
                 Action:
                   - 'ssm:Get*'
