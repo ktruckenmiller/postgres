@@ -9,6 +9,6 @@
         stack_name: "{{stackname}}"
         state: present
         region: "{{region}}"
-        template: postgres.yml
+        template: postgres-backup.yml
         template_parameters:
           Tag: "{{tag | default('latest')}}"

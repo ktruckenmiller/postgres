@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An example service
+Parameters:
+  Tag:
+    Type: String
+  ClusterName:
+    Type: String
+    Default: kloudcover
+
+Resources:
+  Logs:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub ${AWS::StackName}
+      RetentionInDays: 7
+
+  BackupScheduledTask:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Backup Postgres db
+      State: ENABLED
+      ScheduleExpression: rate(14 days)
+      Targets:
+        - Id: backup-postgres
+          RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/ecsEventsRole
+          EcsParameters:
+            TaskDefinitionArn: !Ref Task
+            TaskCount: 1
+          Arn: !Sub arn:aws:ecs:us-west-2:${AWS::AccountId}:cluster/${ClusterName}
+
+  Task:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      TaskRoleArn: !Ref Role
+      Family: postgres-utils
+      ContainerDefinitions:
+        - Name: !Sub ${AWS::StackName}
+          Cpu: 40
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:${Tag}
+          MemoryReservation: 300
+          Command:
+            - backup.sh
+          Environment:
+            - Name: SSM_PATH
+              Value: /indetools/staging
+            - Name: S3_BUCKET
+              Value: kloudcover
+            - Name: S3_PREFIX
+              Value: indietools/staging
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: postgres
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "sts:AssumeRole"
+      Path: '/'
+      Policies:
+        - PolicyName: "ssm_and_s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - 's3:*'
+                Resource:
+                  - 'arn:aws:s3:::kloudcover/'
+                  - 'arn:aws:s3:::kloudcover/*'
+              - Effect: "Allow"
+                Action:
+                  - 'ssm:Get*'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/indietools/*"

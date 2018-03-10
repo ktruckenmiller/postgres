@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An example service
+Parameters:
+  Tag:
+    Type: String
+  Cluster:
+    Type: String
+    Default: kloudcover
+Resources:
+  Logs:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub ${AWS::StackName}
+      RetentionInDays: 7
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref Cluster
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 60
+      TaskDefinition: !Task
+      Role: !Ref ServiceRole
+  ServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+  Task:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      TaskRoleArn: !Ref Role
+      Family: postgres
+      NetworkMode: host
+      ContainerDefinitions:
+        - Name: !Sub ${AWS::StackName}
+          Cpu: 100
+          Image: postgres:pg-db
+          MemoryReservation: 300
+          PortMappings:
+            - ContainerPort: 5432
+              HostPort: 5432
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: postgres
+          MountPoints:
+            - SourceVolume: data
+              ContainerPath: /var/lib/postgresql/data
+        - Name: !Sub ${AWS::StackName}-s3-sync
+          Cpu: 40
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/s3-sync:latest
+          Command: /data s3://kloudcover/indietools/staging/postgres-sync
+          MemoryReservation: 200
+          Essential: true
+          MountPoints:
+            - SourceVolume: data
+              ContainerPath: /data
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: s3-sync
+      Volumes:
+        - Name: data
+          Host:
+            SourcePath: /var/lib/postgresql/data
+
+
+
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub ${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "sts:AssumeRole"
+      Path: '/'
+      Policies:
+        - PolicyName: "ssm_and_s3"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - 's3:*'
+                Resource:
+                  - 'arn:aws:s3:::kloudcover/indietools/staging/*'
+              - Effect: "Allow"
+                Action:
+                  - 'ssm:Get*'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/indietools/*"

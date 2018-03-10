@@ -1,14 +1,43 @@
 pipeline:
-  build_docker:
+  build_postgres:
+    image: plugins/ecr
+    repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/postgres
+    tags:
+      - pg-${DRONE_COMMIT:0:8}
+      - pg-db
+    when:
+      event: [push]
+      branch: [master]
+  deploy_postgres:
+    image: ktruckenmiller/ansible:dind
+    environment:
+      - AWS_DEFAULT_REGION=us-west-2
+    commands:
+      - ansible-playbook -i ansible_connection=localhost deployment/deploy_postgres.yml -e tag=${DRONE_TAG} -e region=us-west-2 -vvv
+    when:
+      event: tag
+
+  # build_s3_sync:
+  #   image: plugins/ecr
+  #   repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/s3-sync
+  #   dockerfile: Dockerfile.s3-sync
+  #   region: us-west-2
+  #   tags:
+  #     - latest
+  #     - ${DRONE_TAG}
+  #   when:
+  #     event: tag
+
+  build_docker_backup:
     image: plugins/ecr
     repo: 601394826940.dkr.ecr.us-west-2.amazonaws.com/postgres
     region: us-west-2
+    dockerfile: Dockerfile.backup
     tags:
       - latest
       - ${DRONE_TAG}
     when:
       event: tag
-
   deploy_task:
     image: ktruckenmiller/ansible:dind
     environment:
@@ -17,14 +46,3 @@ pipeline:
       - ansible-playbook -i ansible_connection=localhost deployment/deploy_task.yml -e tag=${DRONE_TAG} -e region=us-west-2 -vvv
     when:
       event: tag
-
-
-  # backup:
-  #   image: ktruckenmiller/ansible:dind
-  #   environment:
-  #     - AWS_DEFAULT_REGION=us-west-2
-  #   commands:
-  #     - ansible-playbook -i ansible_connection=localhost deploy.yml -e tag=0.0.8 -e environ=staging -vvv
-  #   when:
-  #     event: deployment
-  #     branch: master
