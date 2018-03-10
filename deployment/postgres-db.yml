@@ -17,7 +17,7 @@ Resources:
     Properties:
       Cluster: !Ref Cluster
       DesiredCount: 1
-      HealthCheckGracePeriodSeconds: 60
+      # HealthCheckGracePeriodSeconds: 60
       TaskDefinition: !Ref Task
       Role: !Ref ServiceRole
   ServiceRole:
