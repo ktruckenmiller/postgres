@@ -42,7 +42,7 @@ Resources:
       ContainerDefinitions:
         - Name: !Sub ${AWS::StackName}
           Cpu: 100
-          Image: postgres:pg-db
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
           MemoryReservation: 300
           PortMappings:
             - ContainerPort: 5432
