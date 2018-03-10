@@ -59,7 +59,9 @@ Resources:
         - Name: !Sub ${AWS::StackName}-s3-sync
           Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/s3-sync:latest
-          Command: /data s3://kloudcover/indietools/staging/postgres-sync
+          Command:
+            - /data
+            - s3://kloudcover/indietools/staging/postgres-sync
           MemoryReservation: 200
           Essential: true
           MountPoints:
