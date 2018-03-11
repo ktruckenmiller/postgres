@@ -8,8 +8,8 @@ REMOTE=s3://kloudcover$SSM_PATH/postgres-sync
 LOCAL=/var/lib/postgresql/data
 
 ## Sync with S3
-echo "restoring s3://kloudcover => $LOCAL"
-if ! s3-cli sync $LOCAL s3://kloudcover$SSM_PATH/s3-sync; then
+echo "restoring s3://kloudcover$SSM_PATH/postgres-sync => $PGDATA"
+if ! aws s3 sync "s3://kloudcover$SSM_PATH/postgres-sync" "$PGDATA"; then
   error_exit "restore failed"
 fi
 

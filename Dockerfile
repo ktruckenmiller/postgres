@@ -1,5 +1,6 @@
 FROM postgres:10.3-alpine
-RUN apk update && apk add ca-certificates
+RUN apk add --no-cache ca-certificates bash py-pip && \
+    pip install awscli
 ENV AWS_REGION=us-west-2
 ENV AWS_DEFAULT_REGION=us-west-2
 ENV IAM_ROLE=postgres-backup

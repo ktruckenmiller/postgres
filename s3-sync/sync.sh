@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 REMOTE=s3://kloudcover$SSM_PATH/postgres-sync
@@ -30,8 +29,6 @@ function idle {
     [ -n "$BACKUP_INTERVAL" ] && backup
   done
 }
-
-restore
 
 trap final_backup SIGHUP SIGINT SIGTERM
 trap "backup; idle" USR1
