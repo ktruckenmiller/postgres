@@ -6,7 +6,7 @@ set -e
 
 REMOTE=s3://kloudcover$SSM_PATH/postgres-sync
 LOCAL=/var/lib/postgresql/data
-
+set -x
 ## Sync with S3
 echo "restoring s3://kloudcover$SSM_PATH/postgres-sync => $PGDATA"
 if ! aws s3 sync "s3://kloudcover$SSM_PATH/postgres-sync" "$PGDATA"; then
