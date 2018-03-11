@@ -25,7 +25,7 @@ Resources:
       Family: postgres
       NetworkMode: host
       ContainerDefinitions:
-        - Name: !Sub ${AWS::StackName}
+        - Name: postgres-db
           Cpu: 100
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
           MemoryReservation: 300
@@ -41,36 +41,28 @@ Resources:
               awslogs-group: !Sub ${AWS::StackName}
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: postgres
-          MountPoints:
-            - SourceVolume: data
-              ContainerPath: /var/lib/postgresql/data
-        # - Name: !Sub ${AWS::StackName}-s3-sync
-        #   Cpu: 40
-        #   Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/s3-sync:latest
-        #   Command:
-        #     - /data
-        #     - s3://kloudcover/indietools/staging/postgres-sync
-        #   Environment:
-        #     - Name: SSM_PATH
-        #       Value: /indietools/staging
-        #   MemoryReservation: 200
-        #   Essential: true
-        #   MountPoints:
-        #     - SourceVolume: data
-        #       ContainerPath: /data
-        #   LogConfiguration:
-        #     LogDriver: awslogs
-        #     Options:
-        #       awslogs-group: !Sub ${AWS::StackName}
-        #       awslogs-region: !Sub ${AWS::Region}
-        #       awslogs-stream-prefix: s3-sync
-      Volumes:
-        - Name: data
-          Host:
-            SourcePath: /var/lib/postgresql/data
-
-
-
+        - Name: !Sub ${AWS::StackName}-backup
+          Cpu: 40
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
+          Entrypoint:
+            - ''
+          Command:
+            - ./backup.sh
+          Links:
+            - postgres-db:db
+          Environment:
+            - Name: SSM_PATH
+              Value: /indietools/staging
+            - Name: BACKUP_INTERVAL
+              Value: 5m
+          MemoryReservation: 200
+          Essential: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${AWS::StackName}
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: s3-sync
   Role:
     Type: "AWS::IAM::Role"
     Properties:
