@@ -48,8 +48,6 @@ Resources:
             - ''
           Command:
             - ./backup.sh
-          Links:
-            - postgres-db:db
           Environment:
             - Name: SSM_PATH
               Value: /indietools/staging

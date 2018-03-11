@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Settings creds...."
-DB_HOST="db"
+DB_HOST="0.0.0.0"
 DB_NAME=$(ssm_get_parameter $SSM_PATH/db_name)
 DB_USER=$(ssm_get_parameter $SSM_PATH/db_user)
 DB_PASS=$(ssm_get_parameter $SSM_PATH/db_password)
