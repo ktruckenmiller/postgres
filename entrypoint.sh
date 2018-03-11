@@ -4,6 +4,19 @@ POSTGRES_USER=$(ssm_get_parameter $SSM_PATH/db_user)
 POSTGRES_PASSWORD=$(ssm_get_parameter $SSM_PATH/db_password)
 set -e
 
+REMOTE=s3://kloudcover$SSM_PATH/postgres-sync
+LOCAL=/var/lib/postgresql/data
+
+## Sync with S3
+echo "restoring s3://kloudcover => $LOCAL"
+if ! s3-cli sync $LOCAL s3://kloudcover$SSM_PATH/s3-sync; then
+  error_exit "restore failed"
+fi
+
+## Write file permissions in case the transfer messed them up
+chown -R postgres:postgres /var/lib/postgresql/data
+
+
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of

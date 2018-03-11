@@ -17,22 +17,7 @@ Resources:
     Properties:
       Cluster: !Ref Cluster
       DesiredCount: 1
-      # HealthCheckGracePeriodSeconds: 60
       TaskDefinition: !Ref Task
-      # Role: !Ref ServiceRole
-  # ServiceRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2008-10-17
-  #       Statement:
-  #         - Sid: ''
-  #           Effect: Allow
-  #           Principal:
-  #             Service: ecs.amazonaws.com
-  #           Action: 'sts:AssumeRole'
-  #     ManagedPolicyArns:
-  #       - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -65,6 +50,9 @@ Resources:
           Command:
             - /data
             - s3://kloudcover/indietools/staging/postgres-sync
+          Environment:
+            - Name: SSM_PATH
+              Value: /indietools/staging
           MemoryReservation: 200
           Essential: true
           MountPoints:
