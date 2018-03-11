@@ -47,7 +47,7 @@ Resources:
           EntryPoint:
             - ''
           Command:
-            - ./backup.sh
+            - /backup.sh
           Environment:
             - Name: SSM_PATH
               Value: /indietools/staging
