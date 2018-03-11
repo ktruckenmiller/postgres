@@ -52,7 +52,7 @@ Resources:
             - Name: SSM_PATH
               Value: /indietools/staging
             - Name: BACKUP_INTERVAL
-              Value: 5m
+              Value: 7d
           MemoryReservation: 200
           Essential: true
           LogConfiguration:
