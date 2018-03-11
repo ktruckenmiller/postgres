@@ -44,7 +44,7 @@ Resources:
         - Name: !Sub ${AWS::StackName}-backup
           Cpu: 40
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
-          Entrypoint:
+          EntryPoint:
             - ''
           Command:
             - ./backup.sh
