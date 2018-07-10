@@ -1,6 +1,4 @@
 #!/bin/sh
-
-#!/bin/sh
 echo "Settings creds...."
 DB_HOST=$(ssm_get_parameter $SSM_PATH/db_host)
 DB_NAME=$(ssm_get_parameter $SSM_PATH/db_name)

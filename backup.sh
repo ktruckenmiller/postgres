@@ -29,7 +29,7 @@ function idle {
   done
 }
 
-# trap backup SIGHUP SIGINT SIGTERM
+trap backup SIGHUP SIGINT SIGTERM
 trap "backup; idle" USR1
 
 idle

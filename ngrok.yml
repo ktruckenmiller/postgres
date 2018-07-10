@@ -1,0 +1,4 @@
+tunnels:
+  postgres:
+    proto: tcp
+    addr: 5432

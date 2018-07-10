@@ -1,0 +1,29 @@
+{
+	"Cluster": "kloudcover",
+	"ContainerInstanceARN": "arn:aws:ecs:us-west-2:601394826940:container-instance/5c9e479c-8d04-47a1-be69-06d1fd18eb74",
+	"TaskARN": "arn:aws:ecs:us-west-2:601394826940:task/1f2f5b5d-1b01-4f86-a567-c139b660df29",
+	"TaskDefinitionFamily": "motioncare-production-Task-1XJCLLOV7X40O",
+	"TaskDefinitionRevision": "1",
+	"ContainerID": "c11cbdb82be5b7e135b59e84c92364e2ac59f26c02e6372670046820c0e0217f",
+	"ContainerName": "motioncare",
+	"DockerContainerName": "/ecs-motioncare-production-Task-1XJCLLOV7X40O-1-motioncare-faadd18be5e5cfe75700",
+	"ImageID": "sha256:0543f8ac35983ef71c1bd8cca09ff30b530852b9a36d45361f2b5c963589eee7",
+	"ImageName": "601394826940.dkr.ecr.us-west-2.amazonaws.com/wordpress:0.1.8",
+	"PortMappings": [
+		{
+			"ContainerPort": 80,
+			"HostPort": 32777,
+			"BindIp": "0.0.0.0",
+			"Protocol": "tcp"
+		}
+	],
+	"Networks": [
+		{
+			"NetworkMode": "default",
+			"IPv4Addresses": [
+				"172.17.0.11"
+			]
+		}
+	],
+	"MetadataFileStatus": "READY"
+}

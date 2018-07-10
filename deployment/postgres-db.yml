@@ -18,23 +18,45 @@ Resources:
       Cluster: !Ref Cluster
       DesiredCount: 1
       TaskDefinition: !Ref Task
+      ServiceRegistries:
+        - RegistryArn: !GetAtt ServiceDiscovery.Arn
+      # HealthCheckGracePeriodSeconds: 120
+  ServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Description: 'Service discovery for the indietools db'
+      DnsConfig:
+        DnsRecords:
+          - Type: SRV
+            TTL: 60
+        NamespaceId: ns-5n62syucv3kj72es
+      Name: db
   Task:
     Type: AWS::ECS::TaskDefinition
     Properties:
       TaskRoleArn: !Ref Role
       Family: postgres
-      NetworkMode: host
+      # NetworkMode: host
       ContainerDefinitions:
         - Name: postgres-db
           Cpu: 100
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:fg
           MemoryReservation: 300
+          # HealthCheck:
+          #   Command: ["CMD-SHELL", "pg_isready -U postgres"]
+          #   Interval: 5
+          #   Timeout: 30
+          #   Retries: 3
           Environment:
             - Name: SSM_PATH
               Value: /indietools/staging
+            - Name: S3_PREFIX
+              Value: indietools/staging
+            - Name: S3_BUCKET
+              Value: kloudcover
           PortMappings:
             - ContainerPort: 5432
-              HostPort: 5432
+              HostPort: 0
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -43,7 +65,7 @@ Resources:
               awslogs-stream-prefix: postgres
         - Name: !Sub ${AWS::StackName}-backup
           Cpu: 40
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:pg-db
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/postgres:fg
           EntryPoint:
             - ''
           Command:
@@ -52,7 +74,7 @@ Resources:
             - Name: SSM_PATH
               Value: /indietools/staging
             - Name: BACKUP_INTERVAL
-              Value: 7d
+              Value: 5d
           MemoryReservation: 200
           Essential: true
           LogConfiguration:
@@ -95,3 +117,4 @@ Resources:
                   - 'ssm:Get*'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/indietools/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/ngrok.token"
